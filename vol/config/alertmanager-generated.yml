@@ -1,4 +1,6 @@
+global:
+  resolve_timeout: 5m
 route:
-  receiver: devnull
+  receiver: 'null'
 receivers:
-  - name: devnull
+  - name: 'null'
