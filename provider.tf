@@ -1,15 +1,12 @@
 provider "aws" {
   region = var.region
-
-  dynamic "assume_role" {
-    for_each = var.assume_role_arn == null ? [] : [var.assume_role_arn]
-    content {
-      role_arn = assume_role.value
-    }
+    assume_role {
+    role_arn = "arn:aws:iam::640168415309:role/MSK-Builder"
+    # tags = { AccessScope = "team-x" }  # if your org uses ABAC session tags
   }
 
   default_tags {
-    tags = merge(var.tags, { AccessScope = var.access_scope })
+    tags = var.tags
   }
 }
 
