@@ -17,7 +17,7 @@ variable "pb_arn" {
 variable "access_scope" {
   description = "Access scope tag value required by organizational ABAC policies."
   type        = string
-  default     = "team-x"
+  default     = "Hadi"
 }
 
 variable "vpc_id" {
