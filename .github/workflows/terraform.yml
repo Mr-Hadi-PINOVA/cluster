@@ -60,9 +60,7 @@ jobs:
       - name: Materialize tfvars from secret
         if: secrets.TERRAFORM_TFVARS != ''
         run: |
-          cat <<'VARS' > ${{ env.TF_VARS_FILE }}
-${{ secrets.TERRAFORM_TFVARS }}
-VARS
+          cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
 
       - name: Terraform fmt
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check -recursive
@@ -110,9 +108,7 @@ VARS
       - name: Materialize tfvars from secret
         if: secrets.TERRAFORM_TFVARS != ''
         run: |
-          cat <<'VARS' > ${{ env.TF_VARS_FILE }}
-${{ secrets.TERRAFORM_TFVARS }}
-VARS
+          cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
 
       - name: Terraform init (no upgrade)
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
@@ -218,9 +214,7 @@ VARS
       - name: Materialize tfvars from secret
         if: secrets.TERRAFORM_TFVARS != ''
         run: |
-          cat <<'VARS' > ${{ env.TF_VARS_FILE }}
-${{ secrets.TERRAFORM_TFVARS }}
-VARS
+          cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
 
       - name: Terraform init
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
