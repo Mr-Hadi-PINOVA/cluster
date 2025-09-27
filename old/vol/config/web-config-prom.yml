@@ -1,3 +1,0 @@
-# Minimal valid web config (no auth, no TLS)
-http_server_config: {}
-basic_auth_users: {}
