@@ -15,6 +15,7 @@ This stack is designed for **high-frequency, small messages** (e.g., order book 
   - [Variables](#variables)
   - [Example `example.tfvars`](#example-exampletfvars)
 - [How to deploy](#how-to-deploy)
+- [CI/CD (GitHub Actions)](#cicd-github-actions)
 - [How to use](#how-to-use)
   - [Attach role/SG to EC2 collectors](#attach-rolesg-to-ec2-collectors)
   - [Producer client settings](#producer-client-settings)
@@ -177,6 +178,44 @@ If you set `assume_role_arn`, make sure the base credentials have permission to 
 
 ---
 
+## CI/CD (GitHub Actions)
+
+> Mirror these recommendations in whatever CI/CD platform you use. They assume GitHub-hosted runners with AWS federation via OIDC.
+
+1. **Pin toolchain versions**
+   - Install Terraform ≥ 1.6 and the AWS provider ≥ 5.70/5.100 explicitly so workflow runs stay compatible with this configuration.
+2. **Run the same commands as local deployment**
+   - Execute `terraform init -upgrade`, `terraform fmt -recursive`, `terraform validate`, and `terraform plan` in CI to catch syntax and drift issues before any apply.
+   - Upload the generated plan as an artifact for review.
+3. **Require human approval before apply**
+   - Keep `terraform apply` in a separate job that consumes the reviewed plan artifact and is gated by manual approval or protected environments.
+4. **Rely on short-lived credentials**
+   - Configure GitHub’s OIDC provider to assume the existing `MSK-Builder` role instead of checking in long-lived AWS access keys.
+   - If environments use different roles, surface a variable such as `assume_role_arn` and feed it from environment or repository secrets.
+5. **Securely pass variables and secrets**
+   - Store real `.tfvars` files or sensitive variables (region, subnets, topic prefixes, permission-boundary ARN) as encrypted secrets and supply them with `-var-file`/`-var` at runtime.
+6. **Centralize Terraform state**
+   - Point Terraform at a remote backend (e.g., S3 with DynamoDB locking) so concurrent runs do not clash on local state.
+   - Use separate backends or workspaces per environment and restrict who can trigger production applies.
+7. **Surface plan feedback**
+   - Have the plan job comment on pull requests and schedule periodic plan-only runs for drift detection so you can spot unintended changes without applying.
+
+### Reference workflow in this repository
+
+The `.github/workflows/terraform.yml` pipeline implements the guidance above with five dedicated jobs:
+
+| Job | Purpose |
+| --- | --- |
+| `validate` | Runs `terraform fmt`, `terraform validate`, and captures a reusable plan artifact for reviewers. |
+| `terraform-init` | Performs a standalone initialization check against the configured backend so remote state issues surface early. |
+| `apply` | Gated behind manual `workflow_dispatch` and the protected `production` environment; consumes the reviewed plan to apply infrastructure changes. |
+| `report` | Publishes `terraform output` values to the workflow summary after a successful apply so stakeholders can see new infrastructure details. |
+| `destroy` | Provides an on-demand teardown path that requires the same approvals as apply. |
+
+To feed environment-specific variables, store an HCL snippet in the `TERRAFORM_TFVARS` secret (for example, the contents of your `example.tfvars`) so each job can materialize a temporary `ci.auto.tfvars` at runtime. Set `AWS_ROLE_ARN`/`AWS_REGION` secrets (or environment-level equivalents) to let the workflow assume the correct IAM role via GitHub’s OIDC federation.
+
+---
+
 ## How to use
 
 ### Attach role/SG to EC2 collectors
@@ -232,7 +271,10 @@ General Kafka settings that work well for **small, frequent messages**:
 
 ### Cost notes
 
-- MSK Serverless: charged primarily by **GB in/out** and **partition-hours**
+- MSK Serverless: charged primarily by **GB in/out** and **partition-hours**. Even when no custom topics or data exist, Kafka’s internal topics (e.g., `__consumer_offsets`, MSK health canaries) still contribute dozens of partitions that accrue charges every hour the cluster runs.
+  - Expect roughly **$0.70–$0.80 per hour** (region dependent) for the built-in partitions alone (~50 partitions × $0.015/partition-hour ≈ $14–$18/day).
+  - Confirm in the AWS Billing console under the “MSK Serverless Partition Hours” line item.
+  - Destroy the cluster (`terraform destroy`) when idle—there is no pause state for Serverless MSK.
 - CloudWatch Logs: ingestion + retention
 - EC2 instances & NAT egress for collectors
 
@@ -311,5 +353,8 @@ A: No—this is **Serverless**. You still manage topics, partitions, and IAM.
 **Q: Can I use Kafka transactions (EOS) with IAM?**  
 A: No. IAM auth doesn’t support **WriteTxnMarkers**. Use **idempotent producers** + dedupe if you need strong delivery guarantees.
 
-**Q: Where do I see broker logs?**  
+**Q: Where do I see broker logs?**
 A: In **CloudWatch Logs** under `/aws/msk/<cluster>/broker`.
+
+**Q: Why am I billed when no topics or data exist?**
+A: MSK Serverless automatically provisions internal Kafka system topics with many partitions (e.g., `__consumer_offsets`, canary topics). Partition-hours are billable whether or not traffic flows, so the system partitions alone can total **~$14 per day**. Delete the cluster when idle to eliminate the charge.
