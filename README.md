@@ -115,7 +115,7 @@ Key inputs you must set:
 ### Example `example.tfvars`
 
 ```hcl
-region     = "eu-west-1"
+region     = "ap-south-1"
 vpc_id     = "vpc-0abc1234"
 subnet_ids = ["subnet-0aaa...", "subnet-0bbb..."]
 
@@ -127,7 +127,7 @@ consumer_group_names    = ["team-quant", "team-research"]
 
 tags = {
   Project = "CryptoData"
-  Owner   = "DataPlatform"
+  Owner   = "Hadi"
   Env     = "prod"
 }
 ```

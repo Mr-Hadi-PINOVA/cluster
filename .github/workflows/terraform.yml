@@ -35,6 +35,7 @@ env:
   TF_WORKING_DIR: .
   PLAN_FILE: plan.out
   TF_VARS_FILE: ci.auto.tfvars
+  TF_BACKEND_FILE: backend.auto.tfbackend
   AWS_REGION: ap-south-1
 
 jobs:
@@ -51,16 +52,21 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Configure AWS credentials (OIDC)
-        if: secrets.AWS_ROLE_ARN != ''
+        if: ${{ secrets.AWS_ROLE_ARN != '' || vars.AWS_ROLE_ARN != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN != '' && secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || (vars.AWS_REGION != '' && vars.AWS_REGION) || env.AWS_REGION }}
 
       - name: Materialize tfvars from secret
-        if: secrets.TERRAFORM_TFVARS != ''
+        if: ${{ secrets.TERRAFORM_TFVARS != '' }}
         run: |
           cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
+
+      - name: Materialize backend config from secrets/vars
+        if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
+        run: |
+          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
 
       - name: Terraform fmt
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check -recursive
@@ -99,16 +105,21 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Configure AWS credentials (OIDC)
-        if: secrets.AWS_ROLE_ARN != ''
+        if: ${{ secrets.AWS_ROLE_ARN != '' || vars.AWS_ROLE_ARN != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN != '' && secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || (vars.AWS_REGION != '' && vars.AWS_REGION) || env.AWS_REGION }}
 
       - name: Materialize tfvars from secret
-        if: secrets.TERRAFORM_TFVARS != ''
+        if: ${{ secrets.TERRAFORM_TFVARS != '' }}
         run: |
           cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
+
+      - name: Materialize backend config from secrets/vars
+        if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
+        run: |
+          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
 
       - name: Terraform init (no upgrade)
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
@@ -119,7 +130,7 @@ jobs:
     needs:
       - validate
       - terraform-init
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.tf_action == 'apply'
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tf_action == 'apply' }}
     environment:
       name: production
     steps:
@@ -132,10 +143,16 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Configure AWS credentials (OIDC)
+        if: ${{ secrets.AWS_ROLE_ARN != '' || vars.AWS_ROLE_ARN != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN != '' && secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || (vars.AWS_REGION != '' && vars.AWS_REGION) || env.AWS_REGION }}
+
+      - name: Materialize backend config from secrets/vars
+        if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
+        run: |
+          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
 
       - name: Download plan artifact
         uses: actions/download-artifact@v4
@@ -165,7 +182,7 @@ jobs:
     name: Report created infrastructure
     runs-on: ubuntu-latest
     needs: apply
-    if: needs.apply.result == 'success'
+    if: ${{ needs.apply.result == 'success' }}
     steps:
       - name: Download outputs artifact
         uses: actions/download-artifact@v4
@@ -193,7 +210,7 @@ jobs:
     runs-on: ubuntu-latest
     needs:
       - terraform-init
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.tf_action == 'destroy'
+    if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tf_action == 'destroy' }}
     environment:
       name: production
     steps:
@@ -206,15 +223,21 @@ jobs:
           terraform_version: ${{ env.TERRAFORM_VERSION }}
 
       - name: Configure AWS credentials (OIDC)
+        if: ${{ secrets.AWS_ROLE_ARN != '' || vars.AWS_ROLE_ARN != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN != '' && secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN }}
+          aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || (vars.AWS_REGION != '' && vars.AWS_REGION) || env.AWS_REGION }}
 
       - name: Materialize tfvars from secret
-        if: secrets.TERRAFORM_TFVARS != ''
+        if: ${{ secrets.TERRAFORM_TFVARS != '' }}
         run: |
           cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
+
+      - name: Materialize backend config from secrets/vars
+        if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
+        run: |
+          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
 
       - name: Terraform init
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
