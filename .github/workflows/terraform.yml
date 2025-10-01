@@ -59,9 +59,11 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || (vars.AWS_REGION != '' && vars.AWS_REGION) || env.AWS_REGION }}
 
       - name: Materialize tfvars from secret
-        if: ${{ secrets.TERRAFORM_TFVARS != '' }}
+        if: ${{ vars.TERRAFORM_TFVARS != '' }}
         run: |
-          cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
+          cat <<'VARS' > "${{ env.TF_VARS_FILE }}"
+          ${{ vars.TERRAFORM_TFVARS }}
+          VARS
 
       - name: Materialize backend config from secrets/vars
         if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
