@@ -59,16 +59,18 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION != '' && secrets.AWS_REGION || (vars.AWS_REGION != '' && vars.AWS_REGION) || env.AWS_REGION }}
 
       - name: Materialize tfvars from secret
-        if: ${{ vars.TERRAFORM_TFVARS != '' }}
+        if: ${{ secrets.TERRAFORM_TFVARS != '' }}
         run: |
           cat <<'VARS' > "${{ env.TF_VARS_FILE }}"
-          ${{ vars.TERRAFORM_TFVARS }}
+          ${{ secrets.TERRAFORM_TFVARS }}
           VARS
 
       - name: Materialize backend config from secrets/vars
         if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
         run: |
-          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
+          cat <<'BACKEND' > "${{ env.TF_BACKEND_FILE }}"
+          ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }}
+          BACKEND
 
       - name: Terraform fmt
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check -recursive
@@ -86,6 +88,7 @@ jobs:
           else
             terraform -chdir=${{ env.TF_WORKING_DIR }} plan -input=false -out="${{ env.PLAN_FILE }}"
           fi
+
 
       - name: Upload plan artifact
         uses: actions/upload-artifact@v4
@@ -116,12 +119,16 @@ jobs:
       - name: Materialize tfvars from secret
         if: ${{ secrets.TERRAFORM_TFVARS != '' }}
         run: |
-          cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
+          cat <<'VARS' > "${{ env.TF_VARS_FILE }}"
+          ${{ secrets.TERRAFORM_TFVARS }}
+          VARS
 
       - name: Materialize backend config from secrets/vars
         if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
         run: |
-          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
+          cat <<'BACKEND' > "${{ env.TF_BACKEND_FILE }}"
+          ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }}
+          BACKEND
 
       - name: Terraform init (no upgrade)
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
@@ -154,12 +161,15 @@ jobs:
       - name: Materialize backend config from secrets/vars
         if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
         run: |
-          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
+          cat <<'BACKEND' > "${{ env.TF_BACKEND_FILE }}"
+          ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }}
+          BACKEND
 
       - name: Download plan artifact
         uses: actions/download-artifact@v4
         with:
           name: terraform-plan
+          path: .
 
       - name: Terraform init
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
@@ -190,6 +200,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: terraform-outputs
+          path: .
 
       - name: Publish outputs to summary
         run: |
@@ -234,12 +245,16 @@ jobs:
       - name: Materialize tfvars from secret
         if: ${{ secrets.TERRAFORM_TFVARS != '' }}
         run: |
-          cat <<'VARS' > ${{ env.TF_VARS_FILE }} ${{ secrets.TERRAFORM_TFVARS }} VARS
+          cat <<'VARS' > "${{ env.TF_VARS_FILE }}"
+          ${{ secrets.TERRAFORM_TFVARS }}
+          VARS
 
       - name: Materialize backend config from secrets/vars
         if: ${{ secrets.TF_BACKEND_CONFIG != '' || vars.TF_BACKEND_CONFIG != '' }}
         run: |
-          cat <<'BACKEND' > ${{ env.TF_BACKEND_FILE }} ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }} BACKEND
+          cat <<'BACKEND' > "${{ env.TF_BACKEND_FILE }}"
+          ${{ secrets.TF_BACKEND_CONFIG != '' && secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG }}
+          BACKEND
 
       - name: Terraform init
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
