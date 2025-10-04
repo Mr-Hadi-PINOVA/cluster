@@ -1,46 +1,5 @@
-output "msk_cluster_arn" {
-  value       = aws_msk_serverless_cluster.this.arn
-  description = "MSK Serverless cluster ARN"
-}
-
-output "msk_cluster_uuid" {
-  value       = aws_msk_serverless_cluster.this.cluster_uuid
-  description = "UUID used in Kafka ARNs"
-}
-
-output "bootstrap_brokers_sasl_iam" {
-  value       = aws_msk_serverless_cluster.this.bootstrap_brokers_sasl_iam
-  description = "Comma-separated brokers for SASL/IAM (TLS :9098)"
-}
-
-output "msk_broker_security_group_id" {
-  value       = aws_security_group.msk_brokers.id
-  description = "Security group ID for MSK brokers"
-}
-
-output "collector_instance_profile_name" {
-  value       = aws_iam_instance_profile.collector_profile.name
-  description = "Attach this instance profile to your EC2 collectors"
-}
-
-output "consumer_policy_arn" {
-  value       = aws_iam_policy.consumer.arn
-  description = "Attach this to consumer roles in other teams"
-}
-
-output "collector_sg_id" {
-  value       = aws_security_group.collector.id
-  description = "Security Group ID created for EC2 collectors"
-}
-
-output "consumer_sg_id" {
-  value       = aws_security_group.consumers.id
-  description = "Security Group ID created for MSK consumers"
-}
-
-output "infrastructure_summary_json" {
-  description = "JSON summary of the AWS resources created by this configuration"
-  value = jsonencode({
+locals {
+  infrastructure_summary = {
     msk_cluster = {
       arn                        = aws_msk_serverless_cluster.this.arn
       cluster_uuid               = aws_msk_serverless_cluster.this.cluster_uuid
@@ -138,5 +97,55 @@ output "infrastructure_summary_json" {
         }
       }
     }
-  })
+  }
+}
+
+output "msk_cluster_arn" {
+  value       = aws_msk_serverless_cluster.this.arn
+  description = "MSK Serverless cluster ARN"
+}
+
+output "msk_cluster_uuid" {
+  value       = aws_msk_serverless_cluster.this.cluster_uuid
+  description = "UUID used in Kafka ARNs"
+}
+
+output "bootstrap_brokers_sasl_iam" {
+  value       = aws_msk_serverless_cluster.this.bootstrap_brokers_sasl_iam
+  description = "Comma-separated brokers for SASL/IAM (TLS :9098)"
+}
+
+output "msk_broker_security_group_id" {
+  value       = aws_security_group.msk_brokers.id
+  description = "Security group ID for MSK brokers"
+}
+
+output "collector_instance_profile_name" {
+  value       = aws_iam_instance_profile.collector_profile.name
+  description = "Attach this instance profile to your EC2 collectors"
+}
+
+output "consumer_policy_arn" {
+  value       = aws_iam_policy.consumer.arn
+  description = "Attach this to consumer roles in other teams"
+}
+
+output "collector_sg_id" {
+  value       = aws_security_group.collector.id
+  description = "Security Group ID created for EC2 collectors"
+}
+
+output "consumer_sg_id" {
+  value       = aws_security_group.consumers.id
+  description = "Security Group ID created for MSK consumers"
+}
+
+output "infrastructure_summary_json" {
+  description = "JSON summary of the AWS resources created by this configuration"
+  value       = jsonencode(local.infrastructure_summary)
+}
+
+resource "local_file" "infrastructure_summary" {
+  content  = jsonencode(local.infrastructure_summary)
+  filename = "${path.module}/resources.json"
 }

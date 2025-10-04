@@ -50,7 +50,7 @@ resource "aws_iam_role" "collector_role" {
 resource "aws_iam_instance_profile" "collector_profile" {
   name = aws_iam_role.collector_role.name
   role = aws_iam_role.collector_role.name
-  tags = merge(var.tags, { AccessScope = var.access_scope})
+  tags = merge(var.tags, { AccessScope = var.access_scope })
 }
 
 # Control-plane permissions (fetch bootstrap brokers, describe cluster)
