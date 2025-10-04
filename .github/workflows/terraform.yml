@@ -110,7 +110,7 @@ jobs:
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} fmt -check -recursive
 
       - name: Terraform init
-        run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -upgrade -input=false
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} init -input=false
 
       - name: Terraform validate
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} validate
