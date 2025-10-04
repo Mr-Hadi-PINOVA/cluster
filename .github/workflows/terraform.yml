@@ -37,6 +37,8 @@ env:
   TF_VARS_FILE: ci.auto.tfvars
   TF_BACKEND_FILE: backend.auto.tfbackend
   AWS_REGION: ap-south-1
+  INFRA_SUMMARY_BUCKET: test-raw-bucket
+  INFRA_SUMMARY_KEY: terraform/cluster/resources.json
 
 jobs:
   validate:
@@ -177,6 +179,19 @@ jobs:
       - name: Terraform apply
         run: terraform -chdir=${{ env.TF_WORKING_DIR }} apply -input=false -auto-approve "${{ env.PLAN_FILE }}"
 
+      - name: Save infrastructure summary
+        run: terraform -chdir=${{ env.TF_WORKING_DIR }} output -json infrastructure_summary_json > resources.json
+
+      - name: Upload infrastructure summary
+        uses: actions/upload-artifact@v4
+        with:
+          name: infra-summary
+          path: resources.json
+
+      - name: Publish summary to S3
+        if: ${{ env.INFRA_SUMMARY_BUCKET != '' && env.INFRA_SUMMARY_KEY != '' }}
+        run: aws s3 cp resources.json "s3://${{ env.INFRA_SUMMARY_BUCKET }}/${{ env.INFRA_SUMMARY_KEY }}"
+
       - name: Capture outputs
         run: |
           terraform -chdir=${{ env.TF_WORKING_DIR }} output -json > terraform-outputs.json
@@ -266,3 +281,12 @@ jobs:
           else
             terraform -chdir=${{ env.TF_WORKING_DIR }} destroy -auto-approve -input=false
           fi
+
+      - name: Save post-destroy summary
+        run: |
+          (terraform -chdir=${{ env.TF_WORKING_DIR }} output -json infrastructure_summary_json > resources.json) \
+            || printf '{}' > resources.json
+
+      - name: Publish post-destroy summary to S3
+        if: ${{ env.INFRA_SUMMARY_BUCKET != '' && env.INFRA_SUMMARY_KEY != '' }}
+        run: aws s3 cp resources.json "s3://${{ env.INFRA_SUMMARY_BUCKET }}/${{ env.INFRA_SUMMARY_KEY }}"
