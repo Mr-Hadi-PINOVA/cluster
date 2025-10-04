@@ -56,12 +56,16 @@ jobs:
       - name: Resolve runtime configuration
         run: |
           {
-            echo "ASSUME_ROLE_ARN=${ASSUME_ROLE_ARN}";
-            echo "AWS_REGION_EFFECTIVE=${AWS_REGION_INPUT}";
-            echo "TFVARS_CONTENT<<'EOF'";
+            echo "ASSUME_ROLE_ARN<<EOF";
+            echo "${ASSUME_ROLE_ARN}";
+            echo "EOF";
+            echo "AWS_REGION_EFFECTIVE<<EOF";
+            echo "${AWS_REGION_INPUT}";
+            echo "EOF";
+            echo "TFVARS_CONTENT<<EOF";
             echo "${TFVARS}";
             echo "EOF";
-            echo "TF_BACKEND_CONTENT<<'EOF'";
+            echo "TF_BACKEND_CONTENT<<EOF";
             echo "${TF_BACKEND_CONFIG}";
             echo "EOF";
           } >> "$GITHUB_ENV"
