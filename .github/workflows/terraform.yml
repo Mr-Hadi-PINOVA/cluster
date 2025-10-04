@@ -68,19 +68,27 @@ jobs:
             echo "TF_BACKEND_CONTENT<<EOF";
             echo "${TF_BACKEND_CONFIG}";
             echo "EOF";
+            echo "AWS_ACCESS_KEY_ID<<EOF";
+            echo "${AWS_ACCESS_KEY_ID_INPUT}";
+            echo "EOF";
+            echo "AWS_SECRET_ACCESS_KEY<<EOF";
+            echo "${AWS_SECRET_ACCESS_KEY_INPUT}";
+            echo "EOF";
+            echo "AWS_SESSION_TOKEN<<EOF";
+            echo "${AWS_SESSION_TOKEN_INPUT}";
+            echo "EOF";
+            echo "AWS_DEFAULT_REGION<<EOF";
+            echo "${AWS_REGION_INPUT}";
+            echo "EOF";
           } >> "$GITHUB_ENV"
         env:
           ASSUME_ROLE_ARN: ${{ secrets.AWS_ROLE_ARN || vars.AWS_ROLE_ARN || '' }}
           AWS_REGION_INPUT: ${{ secrets.AWS_REGION || vars.AWS_REGION || env.AWS_REGION }}
           TFVARS: ${{ secrets.TERRAFORM_TFVARS || '' }}
           TF_BACKEND_CONFIG: ${{ secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG || '' }}
-
-      - name: Configure AWS credentials (OIDC)
-        if: ${{ env.ASSUME_ROLE_ARN != '' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.ASSUME_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION_EFFECTIVE }}
+          AWS_ACCESS_KEY_ID_INPUT: ${{ secrets.AWS_ACCESS_KEY_ID || '' }}
+          AWS_SECRET_ACCESS_KEY_INPUT: ${{ secrets.AWS_SECRET_ACCESS_KEY || '' }}
+          AWS_SESSION_TOKEN_INPUT: ${{ secrets.AWS_SESSION_TOKEN || '' }}
 
       - name: Materialize tfvars from secret
         if: ${{ env.TFVARS_CONTENT != '' }}
@@ -138,13 +146,29 @@ jobs:
       - name: Resolve runtime configuration
         run: |
           {
-            echo "ASSUME_ROLE_ARN=${ASSUME_ROLE_ARN}";
-            echo "AWS_REGION_EFFECTIVE=${AWS_REGION_INPUT}";
-            echo "TFVARS_CONTENT<<'EOF'";
+            echo "ASSUME_ROLE_ARN<<EOF";
+            echo "${ASSUME_ROLE_ARN}";
+            echo "EOF";
+            echo "AWS_REGION_EFFECTIVE<<EOF";
+            echo "${AWS_REGION_INPUT}";
+            echo "EOF";
+            echo "TFVARS_CONTENT<<EOF";
             echo "${TFVARS}";
             echo "EOF";
-            echo "TF_BACKEND_CONTENT<<'EOF'";
+            echo "TF_BACKEND_CONTENT<<EOF";
             echo "${TF_BACKEND_CONFIG}";
+            echo "EOF";
+            echo "AWS_ACCESS_KEY_ID<<EOF";
+            echo "${AWS_ACCESS_KEY_ID_INPUT}";
+            echo "EOF";
+            echo "AWS_SECRET_ACCESS_KEY<<EOF";
+            echo "${AWS_SECRET_ACCESS_KEY_INPUT}";
+            echo "EOF";
+            echo "AWS_SESSION_TOKEN<<EOF";
+            echo "${AWS_SESSION_TOKEN_INPUT}";
+            echo "EOF";
+            echo "AWS_DEFAULT_REGION<<EOF";
+            echo "${AWS_REGION_INPUT}";
             echo "EOF";
           } >> "$GITHUB_ENV"
         env:
@@ -152,13 +176,9 @@ jobs:
           AWS_REGION_INPUT: ${{ secrets.AWS_REGION || vars.AWS_REGION || env.AWS_REGION }}
           TFVARS: ${{ secrets.TERRAFORM_TFVARS || '' }}
           TF_BACKEND_CONFIG: ${{ secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG || '' }}
-
-      - name: Configure AWS credentials (OIDC)
-        if: ${{ env.ASSUME_ROLE_ARN != '' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.ASSUME_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION_EFFECTIVE }}
+          AWS_ACCESS_KEY_ID_INPUT: ${{ secrets.AWS_ACCESS_KEY_ID || '' }}
+          AWS_SECRET_ACCESS_KEY_INPUT: ${{ secrets.AWS_SECRET_ACCESS_KEY || '' }}
+          AWS_SESSION_TOKEN_INPUT: ${{ secrets.AWS_SESSION_TOKEN || '' }}
 
       - name: Materialize tfvars from secret
         if: ${{ env.TFVARS_CONTENT != '' }}
@@ -200,13 +220,29 @@ jobs:
       - name: Resolve runtime configuration
         run: |
           {
-            echo "ASSUME_ROLE_ARN=${ASSUME_ROLE_ARN}";
-            echo "AWS_REGION_EFFECTIVE=${AWS_REGION_INPUT}";
-            echo "TFVARS_CONTENT<<'EOF'";
+            echo "ASSUME_ROLE_ARN<<EOF";
+            echo "${ASSUME_ROLE_ARN}";
+            echo "EOF";
+            echo "AWS_REGION_EFFECTIVE<<EOF";
+            echo "${AWS_REGION_INPUT}";
+            echo "EOF";
+            echo "TFVARS_CONTENT<<EOF";
             echo "${TFVARS}";
             echo "EOF";
-            echo "TF_BACKEND_CONTENT<<'EOF'";
+            echo "TF_BACKEND_CONTENT<<EOF";
             echo "${TF_BACKEND_CONFIG}";
+            echo "EOF";
+            echo "AWS_ACCESS_KEY_ID<<EOF";
+            echo "${AWS_ACCESS_KEY_ID_INPUT}";
+            echo "EOF";
+            echo "AWS_SECRET_ACCESS_KEY<<EOF";
+            echo "${AWS_SECRET_ACCESS_KEY_INPUT}";
+            echo "EOF";
+            echo "AWS_SESSION_TOKEN<<EOF";
+            echo "${AWS_SESSION_TOKEN_INPUT}";
+            echo "EOF";
+            echo "AWS_DEFAULT_REGION<<EOF";
+            echo "${AWS_REGION_INPUT}";
             echo "EOF";
           } >> "$GITHUB_ENV"
         env:
@@ -214,13 +250,9 @@ jobs:
           AWS_REGION_INPUT: ${{ secrets.AWS_REGION || vars.AWS_REGION || env.AWS_REGION }}
           TFVARS: ${{ secrets.TERRAFORM_TFVARS || '' }}
           TF_BACKEND_CONFIG: ${{ secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG || '' }}
-
-      - name: Configure AWS credentials (OIDC)
-        if: ${{ env.ASSUME_ROLE_ARN != '' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.ASSUME_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION_EFFECTIVE }}
+          AWS_ACCESS_KEY_ID_INPUT: ${{ secrets.AWS_ACCESS_KEY_ID || '' }}
+          AWS_SECRET_ACCESS_KEY_INPUT: ${{ secrets.AWS_SECRET_ACCESS_KEY || '' }}
+          AWS_SESSION_TOKEN_INPUT: ${{ secrets.AWS_SESSION_TOKEN || '' }}
 
       - name: Materialize backend config from secrets/vars
         if: ${{ env.TF_BACKEND_CONTENT != '' }}
@@ -316,13 +348,29 @@ jobs:
       - name: Resolve runtime configuration
         run: |
           {
-            echo "ASSUME_ROLE_ARN=${ASSUME_ROLE_ARN}";
-            echo "AWS_REGION_EFFECTIVE=${AWS_REGION_INPUT}";
-            echo "TFVARS_CONTENT<<'EOF'";
+            echo "ASSUME_ROLE_ARN<<EOF";
+            echo "${ASSUME_ROLE_ARN}";
+            echo "EOF";
+            echo "AWS_REGION_EFFECTIVE<<EOF";
+            echo "${AWS_REGION_INPUT}";
+            echo "EOF";
+            echo "TFVARS_CONTENT<<EOF";
             echo "${TFVARS}";
             echo "EOF";
-            echo "TF_BACKEND_CONTENT<<'EOF'";
+            echo "TF_BACKEND_CONTENT<<EOF";
             echo "${TF_BACKEND_CONFIG}";
+            echo "EOF";
+            echo "AWS_ACCESS_KEY_ID<<EOF";
+            echo "${AWS_ACCESS_KEY_ID_INPUT}";
+            echo "EOF";
+            echo "AWS_SECRET_ACCESS_KEY<<EOF";
+            echo "${AWS_SECRET_ACCESS_KEY_INPUT}";
+            echo "EOF";
+            echo "AWS_SESSION_TOKEN<<EOF";
+            echo "${AWS_SESSION_TOKEN_INPUT}";
+            echo "EOF";
+            echo "AWS_DEFAULT_REGION<<EOF";
+            echo "${AWS_REGION_INPUT}";
             echo "EOF";
           } >> "$GITHUB_ENV"
         env:
@@ -330,13 +378,9 @@ jobs:
           AWS_REGION_INPUT: ${{ secrets.AWS_REGION || vars.AWS_REGION || env.AWS_REGION }}
           TFVARS: ${{ secrets.TERRAFORM_TFVARS || '' }}
           TF_BACKEND_CONFIG: ${{ secrets.TF_BACKEND_CONFIG || vars.TF_BACKEND_CONFIG || '' }}
-
-      - name: Configure AWS credentials (OIDC)
-        if: ${{ env.ASSUME_ROLE_ARN != '' }}
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          role-to-assume: ${{ env.ASSUME_ROLE_ARN }}
-          aws-region: ${{ env.AWS_REGION_EFFECTIVE }}
+          AWS_ACCESS_KEY_ID_INPUT: ${{ secrets.AWS_ACCESS_KEY_ID || '' }}
+          AWS_SECRET_ACCESS_KEY_INPUT: ${{ secrets.AWS_SECRET_ACCESS_KEY || '' }}
+          AWS_SESSION_TOKEN_INPUT: ${{ secrets.AWS_SESSION_TOKEN || '' }}
 
       - name: Materialize tfvars from secret
         if: ${{ env.TFVARS_CONTENT != '' }}
